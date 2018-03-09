@@ -63,14 +63,14 @@ def login():
             return redirect(url_for('upload'))
     return render_template('login.html', error=error)
 
-# def get_uploaded_images():
-#     rootdir = os.getcwd()
-#     print rootdir
-#     img = []
-#     for subdir, dirs, files in os.walk(rootdir + '/app/static/uploads'):
-#         for file in files:
-#             img.append(os.path.join(subdir, file).split('/')[-1])
-#     return img
+def get_uploaded_images():
+    rootdir = os.getcwd()
+    print rootdir
+    img = []
+    for subdir, dirs, files in os.walk(rootdir + '/app/static/uploads'):
+        for file in files:
+            img.append(os.path.join(subdir, file).split('/')[-1])
+    return img
 
 @app.route('/logout')
 def logout():
@@ -78,6 +78,12 @@ def logout():
     flash('You were logged out', 'success')
     return redirect(url_for('home'))
 
+@app.route('/files')
+def files():
+    if not session.get('logged_in'):
+        abort(401)
+    images = get_uploaded_images
+    return render_template('files.html', upload_img = images)
 
 ###
 # The functions below should be applicable to all Flask apps.
