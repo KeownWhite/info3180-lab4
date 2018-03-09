@@ -8,6 +8,7 @@ import os
 from app import app
 from flask import render_template, request, redirect, url_for, flash, session, abort
 from werkzeug.utils import secure_filename
+from forms import Upload
 
 
 ###
@@ -32,15 +33,21 @@ def upload():
         abort(401)
 
     # Instantiate your form class
+    uploadForm=Upload()
 
     # Validate file upload on submit
     if request.method == 'POST':
         # Get file data and save to your uploads folder
+        if uploadForm.validate_on_submit():
+            print uploadForm.csrf_token
+            images=uploadForm.images.data
+            filename = secure_filename(images.filename)
+            images.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-        flash('File Saved', 'success')
-        return redirect(url_for('home'))
+            flash('File Saved', 'success')
+            return redirect(url_for('home'))
 
-    return render_template('upload.html')
+    return render_template('upload.html',form=uploadForm)
 
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -51,11 +58,19 @@ def login():
             error = 'Invalid username or password'
         else:
             session['logged_in'] = True
-            
+
             flash('You were logged in', 'success')
             return redirect(url_for('upload'))
     return render_template('login.html', error=error)
 
+# def get_uploaded_images():
+#     rootdir = os.getcwd()
+#     print rootdir
+#     img = []
+#     for subdir, dirs, files in os.walk(rootdir + '/app/static/uploads'):
+#         for file in files:
+#             img.append(os.path.join(subdir, file).split('/')[-1])
+#     return img
 
 @app.route('/logout')
 def logout():
